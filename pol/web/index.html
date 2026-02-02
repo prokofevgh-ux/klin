@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Задачи по дням</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <h1 class="app-title">Задачи по дням</h1>
+    <div class="sync-bar">
+      <span class="sync-label">Синхронизация:</span>
+      <button type="button" class="btn btn-small btn-sync" id="btn-export">📥 Скачать данные</button>
+      <button type="button" class="btn btn-small btn-sync" id="btn-import">📤 Загрузить данные</button>
+      <span id="cloud-status" class="cloud-status"></span>
+    </div>
+    <input type="file" id="import-file-input" accept=".json,application/json" hidden>
+
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="tasks">📋 Задачи</button>
+      <button type="button" class="tab" data-tab="english">🇬🇧 Английский</button>
+      <button type="button" class="tab" data-tab="prayer">✝ Молитва</button>
+    </div>
+
+    <!-- Вкладка Задачи -->
+    <div id="panel-tasks" class="panel active">
+      <div class="game-block">
+        <span id="level-text" class="game-level">⭐ Уровень 1</span>
+        <div class="xp-wrap">
+          <progress id="xp-bar" value="0" max="50"></progress>
+          <span id="xp-text" class="xp-label">0 / 50 XP</span>
+        </div>
+        <span id="streak-text" class="game-streak">🔥 Серия: 0 дн.</span>
+      </div>
+
+      <div class="header-frame">
+        <label for="date-picker" class="date-label">Задачи на:</label>
+        <input type="date" id="date-picker" class="date-input">
+        <span id="date-title" class="date-title"></span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="tasks-table">
+          <thead>
+            <tr>
+              <th>✓</th>
+              <th>Название</th>
+              <th>Описание</th>
+              <th>Приоритет</th>
+              <th>Категория</th>
+            </tr>
+          </thead>
+          <tbody id="tasks-tbody"></tbody>
+        </table>
+      </div>
+      <button type="button" class="btn btn-add" id="btn-add-task">➕ Добавить задачу</button>
+    </div>
+
+    <!-- Вкладка Английский -->
+    <div id="panel-english" class="panel">
+      <div class="english-layout">
+        <div class="english-left">
+          <label class="block-label">Уровень</label>
+          <select id="english-level" class="select-level"></select>
+          <label class="block-label">Уроки (1 — 50)</label>
+          <div id="english-lessons" class="lesson-list"></div>
+        </div>
+        <div class="english-right">
+          <label class="block-label">Слова урока</label>
+          <div class="words-actions">
+            <input type="text" id="word-input" placeholder="Слово" class="input-word">
+            <input type="text" id="trans-input" placeholder="Перевод" class="input-word">
+            <button type="button" class="btn btn-small" id="btn-add-word">➕ Добавить</button>
+            <button type="button" class="btn btn-small btn-remove" id="btn-remove-word">Удалить</button>
+          </div>
+          <div class="table-wrap">
+            <table class="words-table">
+              <thead>
+                <tr><th>Слово</th><th>Перевод</th></tr>
+              </thead>
+              <tbody id="words-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Вкладка Молитва -->
+    <div id="panel-prayer" class="panel">
+      <div class="prayer-image-block">
+        <div id="prayer-image-box" class="prayer-image-box">
+          <span class="placeholder-text">Изображение главы (выберите главу и добавьте фото)</span>
+        </div>
+        <button type="button" class="btn" id="btn-add-prayer-image">🖼 Добавить изображение к главе</button>
+      </div>
+      <div class="prayer-layout">
+        <div class="prayer-left">
+          <label class="block-label">Евангелие</label>
+          <select id="prayer-gospel" class="select-level">
+            <option value="16">Евангелие от Марка</option>
+            <option value="28">Евангелие от Матфея</option>
+            <option value="24">Евангелие от Луки</option>
+            <option value="21">Евангелие от Иоанна</option>
+          </select>
+          <label class="block-label">Главы</label>
+          <div id="prayer-chapters" class="lesson-list"></div>
+        </div>
+        <div class="prayer-right">
+          <label class="block-label">Текст главы</label>
+          <div id="prayer-text" class="prayer-text"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно: новая / редактирование задачи -->
+  <div id="modal-task" class="modal">
+    <div class="modal-content">
+      <h2 id="modal-task-title">Новая задача</h2>
+      <form id="form-task">
+        <input type="hidden" id="task-id">
+        <label>Название</label>
+        <input type="text" id="task-title" required placeholder="Название">
+        <label>Описание</label>
+        <textarea id="task-desc" rows="3" placeholder="Описание"></textarea>
+        <label>Срок</label>
+        <input type="date" id="task-deadline">
+        <label>Приоритет</label>
+        <select id="task-priority">
+          <option value="0">Низкий</option>
+          <option value="1" selected>Средний</option>
+          <option value="2">Высокий</option>
+        </select>
+        <label>Категория</label>
+        <input type="text" id="task-category" placeholder="Например: Английский, Молитва">
+        <div class="modal-buttons">
+          <button type="submit" class="btn">Сохранить</button>
+          <button type="button" class="btn btn-cancel" id="modal-cancel">Отмена</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <input type="file" id="prayer-file-input" accept="image/*" hidden>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
